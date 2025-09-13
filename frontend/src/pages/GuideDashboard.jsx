@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 
 export default function GuideDashboard() {
-  
+    const guide = JSON.parse(localStorage.getItem("userInfo"));
+    console.log(guide)
   return (
     <div
       className="min-h-screen bg-cover bg-center relative"
@@ -28,7 +29,7 @@ export default function GuideDashboard() {
             className="text-3xl font-extrabold text-center"
             style={{ color: "#0D3B66" }}
           >
-            Welcome to Guide Dashboard
+            Welcome {guide.fullName}
           </h1>
         </div>
 

@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 
 export default function AdminDashboard() {
+      const guide = JSON.parse(localStorage.getItem("userInfo"));
+    console.log(guide)
   return (
     <div
       className="min-h-screen bg-cover bg-center relative"
