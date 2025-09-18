@@ -1,35 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 export default function AdminPackagesManagement() {
-  // ✅ Dummy package data (later from DB/API)
-  const [packages, setPackages] = useState([
-    {
-      id: 1,
-      title: "Bali Tropical Escape",
-      destination: "Bali, Indonesia",
-      price: 1200,
-      description: "7-day tropical vacation with beaches, temples, and local tours.",
-      img: "https://picsum.photos/id/1018/600/400",
-    },
-    {
-      id: 2,
-      title: "Andes Mountain Trek",
-      destination: "Cusco, Peru",
-      price: 2500,
-      description: "10-day guided trek through the Andes with Machu Picchu visit.",
-      img: "https://picsum.photos/id/1025/600/400",
-    },
-    {
-      id: 3,
-      title: "Swiss Alps Adventure",
-      destination: "Zurich, Switzerland",
-      price: 3000,
-      description: "5-day skiing, hiking, and luxury resort stay in the Alps.",
-      img: "https://picsum.photos/id/1015/600/400",
-    },
-  ]);
-
+  const [packages, setPackages] = useState([]);
   const [newPackage, setNewPackage] = useState({
     title: "",
     destination: "",
@@ -38,29 +11,73 @@ export default function AdminPackagesManagement() {
     img: "",
   });
 
+  // ✅ Fetch all packages from backend on load
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/packages");
+        if (!res.ok) throw new Error("Failed to fetch packages");
+        const data = await res.json();
+        setPackages(data);
+      } catch (error) {
+        console.error("❌ Fetch failed:", error);
+      }
+    };
+    fetchPackages();
+  }, []);
+
   // ✅ Handle input change
   const handleChange = (e) => {
     setNewPackage({ ...newPackage, [e.target.name]: e.target.value });
   };
 
-  // ✅ Add new package
-  const addPackage = () => {
+  // ✅ Add new package (send to backend)
+  const addPackage = async () => {
     if (!newPackage.title || !newPackage.destination || !newPackage.price) {
       alert("Please fill in all required fields.");
       return;
     }
 
-    setPackages([
-      ...packages,
-      { ...newPackage, id: Date.now(), price: parseInt(newPackage.price) },
-    ]);
+    try {
+      const user = JSON.parse(localStorage.getItem("userInfo")); // logged-in admin
+      const res = await fetch("http://localhost:5000/api/packages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`, // if your backend checks admin
+        },
+        body: JSON.stringify(newPackage),
+      });
 
-    setNewPackage({ title: "", destination: "", price: "", description: "", img: "" });
+      if (!res.ok) throw new Error("Failed to add package");
+      const data = await res.json();
+
+      setPackages([...packages, data]); // ✅ append newly added package
+      setNewPackage({ title: "", destination: "", price: "", description: "", img: "" });
+    } catch (error) {
+      console.error("❌ Add package failed:", error);
+      alert("Failed to add package");
+    }
   };
 
-  // ✅ Remove package
-  const removePackage = (id) => {
-    setPackages((prev) => prev.filter((pkg) => pkg.id !== id));
+  // ✅ Remove package (from backend + frontend)
+  const removePackage = async (id) => {
+    try {
+      const user = JSON.parse(localStorage.getItem("userInfo"));
+      const res = await fetch(`http://localhost:5000/api/packages/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to delete package");
+
+      setPackages((prev) => prev.filter((pkg) => pkg._id !== id)); // ✅ use _id from DB
+    } catch (error) {
+      console.error("❌ Delete failed:", error);
+      alert("Failed to delete package");
+    }
   };
 
   return (
@@ -139,7 +156,7 @@ export default function AdminPackagesManagement() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {packages.map((pkg) => (
             <div
-              key={pkg.id}
+              key={pkg._id}
               className="bg-white/95 rounded-xl shadow-lg overflow-hidden"
             >
               <img src={pkg.img} alt={pkg.title} className="w-full h-40 object-cover" />
@@ -149,7 +166,7 @@ export default function AdminPackagesManagement() {
                 <p className="text-teal-700 font-bold mt-2">₹{pkg.price}</p>
                 <p className="text-sm text-gray-500 mt-2">{pkg.description}</p>
                 <button
-                  onClick={() => removePackage(pkg.id)}
+                  onClick={() => removePackage(pkg._id)}
                   className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                 >
                   Remove

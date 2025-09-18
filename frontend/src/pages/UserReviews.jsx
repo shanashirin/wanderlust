@@ -10,19 +10,50 @@ export default function UserReviews() {
 
   const [submitted, setSubmitted] = useState(false);
 
+  // ✅ Handle input
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // ✅ Handle rating stars
   const handleRating = (value) => {
     setFormData((prev) => ({ ...prev, rating: value }));
   };
 
-  const handleSubmit = (e) => {
+  // ✅ Submit review to backend
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("User Review Submitted:", formData);
-    setSubmitted(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: formData.guideReview
+            ? "guide"
+            : formData.placeReview
+            ? "place"
+            : "site",
+          user: "Alice", // 🔹 Replace later with logged-in user
+          guideId: formData.guideReview ? "64f1234abc..." : undefined, // 🔹 dynamic later
+          place: formData.placeReview ? "Kerala" : undefined, // 🔹 dynamic later
+          comment:
+            formData.guideReview ||
+            formData.placeReview ||
+            formData.siteReview,
+          rating: formData.rating,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to submit review");
+
+      console.log("✅ Review saved:", data);
+      setSubmitted(true);
+    } catch (err) {
+      console.error("❌ Error:", err);
+      alert(err.message);
+    }
   };
 
   return (
@@ -107,7 +138,9 @@ export default function UserReviews() {
                     key={star}
                     onClick={() => handleRating(star)}
                     className={`text-2xl ${
-                      formData.rating >= star ? "text-yellow-500" : "text-gray-400"
+                      formData.rating >= star
+                        ? "text-yellow-500"
+                        : "text-gray-400"
                     }`}
                   >
                     ★

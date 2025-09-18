@@ -22,6 +22,7 @@ import GuidePayments from "./pages/GuidePayment";
 import AdminGuideManagement from "./pages/ManageGuides";
 import AdminUserManagement from "./pages/AdminUserManagement";
 import AdminPackagesManagement from "./pages/AdminPackages";
+import AdminPayments from "./pages/AdminPayment";
 
 
 
@@ -51,6 +52,8 @@ export default function App() {
 <Route path="//admin/guides" element={<AdminGuideManagement/>} />
 <Route path="//admin/users" element={<AdminUserManagement/>} />
 <Route path="//admin/packages" element={<AdminPackagesManagement/>} />
+<Route path="//admin/Payments" element={<AdminPayments/>} />
+
 
    
     </Routes>

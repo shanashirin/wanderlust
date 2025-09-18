@@ -42,56 +42,67 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="bg-white/90 p-8 rounded-2xl shadow-lg w-96">
-        <h1 className="text-3xl font-extrabold text-center mb-6">
-          <span className="text-yellow-600">Wander</span>
-          <span className="text-blue-600">Lust</span>
-        </h1>
+    <div
+      className="min-h-screen bg-cover bg-center relative"
+      style={{
+        backgroundImage: "url('/images/balloon.png')", // ✅ update path if needed
+      }}
+    >
+      {/* Blur Overlay */}
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md"></div>
 
-        <h2 className="text-2xl font-bold text-center text-amber-900">Login</h2>
+      {/* Login Card */}
+      <div className="relative z-10 flex items-center justify-center min-h-screen">
+        <div className="bg-white/90 p-8 rounded-2xl shadow-lg w-96 backdrop-blur-md">
+          <h1 className="text-3xl font-extrabold text-center mb-6">
+            <span className="text-yellow-600">Wander</span>
+            <span className="text-blue-600">Lust</span>
+          </h1>
 
-        <form onSubmit={handleSubmit} className="mt-4">
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            className="w-full p-2 mb-3 border rounded-md"
-            onChange={handleChange}
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            className="w-full p-2 mb-3 border rounded-md"
-            onChange={handleChange}
-          />
+          <h2 className="text-2xl font-bold text-center text-amber-900">Login</h2>
 
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            className="w-full p-2 mb-3 border rounded-md"
-          >
-            <option value="user">User</option>
-            <option value="guide">Guide</option>
-            <option value="admin">Admin</option>
-          </select>
+          <form onSubmit={handleSubmit} className="mt-4">
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              className="w-full p-2 mb-3 border rounded-md"
+              onChange={handleChange}
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              className="w-full p-2 mb-3 border rounded-md"
+              onChange={handleChange}
+            />
 
-          <button
-            type="submit"
-            className="w-full bg-yellow-500 hover:bg-orange-500 text-white font-bold py-2 rounded-md transition"
-          >
-            Login
-          </button>
-        </form>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="w-full p-2 mb-3 border rounded-md"
+            >
+              <option value="user">User</option>
+              <option value="guide">Guide</option>
+              <option value="admin">Admin</option>
+            </select>
 
-        <p className="mt-3 text-center text-sm text-gray-600">
-          Don’t have an account?{" "}
-          <Link to="/register" className="text-yellow-600 font-semibold">
-            Register here
-          </Link>
-        </p>
+            <button
+              type="submit"
+              className="w-full bg-yellow-500 hover:bg-orange-500 text-white font-bold py-2 rounded-md transition"
+            >
+              Login
+            </button>
+          </form>
+
+          <p className="mt-3 text-center text-sm text-gray-600">
+            Don’t have an account?{" "}
+            <Link to="/register" className="text-yellow-600 font-semibold">
+              Register here
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -46,6 +46,7 @@ export default function BudgetTracker() {
 
   const [selected, setSelected] = useState([]);
   const [confirmed, setConfirmed] = useState(false);
+  const [paid, setPaid] = useState(false); // ✅ NEW: payment state
 
   const allActivities = destinations.flatMap((d) => d.activities);
 
@@ -60,7 +61,10 @@ export default function BudgetTracker() {
     );
   };
 
-  const handleConfirm = () => setConfirmed(true);
+  const handleConfirm = () => {
+    setConfirmed(true);
+    setPaid(false); // reset payment if they reconfirm
+  };
   const handleBack = () => setConfirmed(false);
 
   return (
@@ -74,7 +78,7 @@ export default function BudgetTracker() {
       <div className="relative z-10 bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl p-8 w-full max-w-3xl">
         {/* 🔙 Back to Bookings Button */}
         <button
-          onClick={() => navigate("/bookings")} // ✅ now goes to bookings page
+          onClick={() => navigate("/bookings")}
           className="flex items-center gap-2 text-teal-700 hover:text-teal-900 font-semibold mb-6"
         >
           <ArrowLeft className="w-5 h-5" /> Back to Bookings
@@ -177,8 +181,25 @@ export default function BudgetTracker() {
               <h3 className="text-2xl font-bold text-[#0D3B66]">
                 Total Budget: ₹{total}
               </h3>
+
+              {/* ✅ Dummy Payment Button */}
+              {!paid ? (
+                <button
+                  className="mt-4 px-6 py-2 bg-green-600 text-white rounded-xl shadow hover:bg-green-700 transition"
+                  onClick={() => setPaid(true)}
+                >
+                  Pay Now
+                </button>
+              ) : (
+                <div className="mt-4">
+                  <p className="text-green-700 font-bold text-lg">
+                    ✅ Payment Successful!
+                  </p>
+                </div>
+              )}
+
               <button
-                className="mt-4 px-6 py-2 bg-gray-500 text-white rounded-xl shadow hover:bg-gray-600 transition"
+                className="mt-4 ml-3 px-6 py-2 bg-gray-500 text-white rounded-xl shadow hover:bg-gray-600 transition"
                 onClick={handleBack}
               >
                 Go Back

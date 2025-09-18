@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-// 🔹 Middleware to check if user is logged in
+// 🔹 Middleware: Protect routes (only logged-in users)
 export const protect = async (req, res, next) => {
   let token;
 
@@ -18,25 +18,25 @@ export const protect = async (req, res, next) => {
       // Attach user to request (without password)
       req.user = await User.findById(decoded.id).select("-password");
 
+      if (!req.user) {
+        return res.status(401).json({ message: "User not found, invalid token" });
+      }
+
       next();
     } catch (error) {
       console.error("❌ Token verification failed:", error);
-      res.status(401).json({ message: "Not authorized, token failed" });
+      return res.status(401).json({ message: "Not authorized, token failed" });
     }
-  }
-
-  if (!token) {
-    res.status(401).json({ message: "Not authorized, no token" });
+  } else {
+    return res.status(401).json({ message: "Not authorized, no token" });
   }
 };
 
-// 🔹 Middleware to check if user has a specific role
+// 🔹 Middleware: Role-based authorization
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res
-        .status(403)
-        .json({ message: "Forbidden: Access denied" });
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Forbidden: Access denied" });
     }
     next();
   };

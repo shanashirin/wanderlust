@@ -36,6 +36,8 @@ export default function AdminDashboard() {
             { title: "Manage Guides", icon: "🧑‍🏫", link: "/admin/guides" },
             { title: "Manage Users", icon: "👥", link: "/admin/users" },
             { title: "Add Packages", icon: "📦", link: "/admin/packages" },
+              { title: "Payments", icon: "💳", link: "/admin/payments" }, // NEW CARD
+
           ].map((item, i) => (
             <Link
               key={i}
