@@ -1,11 +1,15 @@
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
+import { toast } from "react-toastify"
 
 export default function GuideDashboard() {
   const guide = JSON.parse(localStorage.getItem("userInfo"));
 
   useEffect(() => {
     if (!guide || !guide.token) {
+      window.location.href = "/login";
+    }else if (guide.role !== "guide") {
+      toast.info("Access denied. Redirecting to login.");
       window.location.href = "/login";
     }
   }, [guide]);
@@ -44,7 +48,7 @@ export default function GuideDashboard() {
           {[
             { title: "Profile", icon: "👤", link: "/guide-profile" },
             { title: "Bookings", icon: "📑", link: "/guide-bookings" },
-            { title: "Tours", icon: "🧭", link: "/guide-tours" },
+            // { title: "Tours", icon: "🧭", link: "/guide-tours" },
             { title: "Payments", icon: "💲", link: "/guide-payments" },
             { title: "Reviews", icon: "⭐", link: "/guide-reviews" },
           ].map((item, i) => (

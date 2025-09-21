@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -7,7 +8,13 @@ export default function BudgetTracker() {
   const navigate = useNavigate();
   const { bookingId } = useParams();
   const [user] = useState(() => JSON.parse(localStorage.getItem("userInfo")));
-
+  if (!user || !user.token) {
+    navigate("/login");
+  }
+  if (!bookingId) {
+    toast.warning("please select a booking first!");
+    navigate("/bookings");
+  }
   const [booking, setBooking] = useState(null);
   const [destinations, setDestinations] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -15,9 +22,9 @@ export default function BudgetTracker() {
   const [paid, setPaid] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Fetch booking & package info
+  // Fetch booking & package details
   useEffect(() => {
-    if (!user || !user.token) {
+    if (!user?.token) {
       toast.warning("Please login first!");
       navigate("/login");
       return;
@@ -31,21 +38,9 @@ export default function BudgetTracker() {
         if (!res.ok) throw new Error("Booking not found");
         const data = await res.json();
         setBooking(data);
-
-        // For demo, we assume packageId contains destinations array
-        setDestinations(data.packageId?.destinations || [
-          {
-            id: 1,
-            name: data.packageId?.title,
-            description: data.packageId?.description,
-            activities: [
-              { id: 101, name: "Sample Activity 1", price: 1000 },
-              { id: 102, name: "Sample Activity 2", price: 2000 },
-            ],
-          },
-        ]);
+        setDestinations(data.packageId?.destinations || []);
       } catch (err) {
-        console.error("Failed to fetch booking:", err);
+        console.error(err);
         toast.error("Cannot load booking details");
       } finally {
         setLoading(false);
@@ -58,34 +53,59 @@ export default function BudgetTracker() {
   if (loading) return <p className="text-center mt-10">Loading booking details...</p>;
   if (!booking) return <p className="text-center mt-10">Booking not found</p>;
 
-  const allActivities = destinations.flatMap((d) => d.activities);
+  const allActivities = destinations.flatMap(d => d.activities || []);
   const total = selected.reduce((sum, id) => {
-    const activity = allActivities.find((a) => a.id === id);
-    return sum + (activity ? activity.price : 0);
+    const act = allActivities.find(a => a._id === id || a.id === id);
+    return sum + (act?.price || 0);
   }, 0);
 
-  const handleCheckbox = (id) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+  const handleCheckbox = id =>
+    setSelected(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+
+
+  const handlePayNow = async () => {
+    if (!user || !user.token) return toast.error("Login first");
+
+    try {
+      const payload = {
+        packageId: booking.packageId._id,
+        amount: total,
+        selectedActivities: destinations.flatMap(d =>
+          d.activities.filter(a => selected.includes(a.id))
+        ),
+      };
+
+      const res = await fetch("http://localhost:5000/api/payments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Payment failed");
+      const data = await res.json();
+
+      toast.success("Payment Successful!");
+      setPaid(true);
+      console.log("Payment stored:", data);
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Payment failed");
+    }
   };
 
-  const handleConfirm = () => {
-    setConfirmed(true);
-    setPaid(false);
-  };
-
-  const handleBack = () => setConfirmed(false);
 
   return (
     <div
-      className="min-h-screen bg-cover bg-center relative flex items-center justify-center p-6"
-      style={{ backgroundImage: "url('../public/images/balloon.png')" }}
+      className="min-h-screen flex items-center justify-center relative p-6"
+      style={{ backgroundImage: "url('../public/images/balloon.png')", backgroundSize: "cover", backgroundPosition: "center" }}
     >
+      {/* Blur overlay */}
       <div className="absolute inset-0 bg-white/40 backdrop-blur-md"></div>
 
-      <div className="relative z-10 bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl p-8 w-full max-w-3xl">
-        {/* Back Button */}
+      <div className="relative z-10 bg-white/90 rounded-2xl shadow-2xl p-8 w-full max-w-4xl">
         <button
           onClick={() => navigate("/bookings")}
           className="flex items-center gap-2 text-teal-700 hover:text-teal-900 font-semibold mb-6"
@@ -95,32 +115,30 @@ export default function BudgetTracker() {
 
         {!confirmed ? (
           <>
-            <h2 className="text-3xl font-bold text-center text-[#0D3B66] mb-6">
-              Travel Budget Planner
-            </h2>
+            <h2 className="text-3xl font-bold text-center text-[#0D3B66] mb-6">Travel Budget Planner</h2>
 
             <div className="space-y-8">
-              {destinations.map((destination) => (
-                <div key={destination.id} className="bg-gray-100 p-6 rounded-xl shadow">
-                  <h3 className="text-xl font-bold text-[#0D3B66] mb-2">{destination.name}</h3>
-                  <p className="text-gray-600 mb-4">{destination.description}</p>
+              {destinations.map(dest => (
+                <div key={dest._id || dest.id} className="bg-gray-100 p-6 rounded-xl shadow">
+                  <h3 className="text-xl font-bold text-[#0D3B66] mb-2">{dest.name}</h3>
+                  <p className="text-gray-600 mb-4">{dest.description}</p>
 
                   <div className="space-y-3">
-                    {destination.activities.map((activity) => (
+                    {(dest.activities || []).map(act => (
                       <label
-                        key={activity.id}
+                        key={act._id || act.id}
                         className="flex items-center justify-between bg-white p-3 rounded-lg shadow cursor-pointer hover:bg-gray-50 transition"
                       >
                         <div className="flex items-center gap-3">
                           <input
                             type="checkbox"
-                            checked={selected.includes(activity.id)}
-                            onChange={() => handleCheckbox(activity.id)}
+                            checked={selected.includes(act._id || act.id)}
+                            onChange={() => handleCheckbox(act._id || act.id)}
                             className="w-5 h-5 text-teal-600"
                           />
-                          <span className="font-medium">{activity.name}</span>
+                          <span className="font-medium">{act.name}</span>
                         </div>
-                        <span className="text-teal-700 font-semibold">₹{activity.price}</span>
+                        <span className="text-teal-700 font-semibold">₹{act.price}</span>
                       </label>
                     ))}
                   </div>
@@ -133,7 +151,7 @@ export default function BudgetTracker() {
               <button
                 className="mt-4 px-6 py-2 bg-teal-600 text-white rounded-xl shadow hover:bg-teal-700 transition"
                 disabled={selected.length === 0}
-                onClick={handleConfirm}
+                onClick={() => setConfirmed(true)}
               >
                 Confirm Selection
               </button>
@@ -141,23 +159,19 @@ export default function BudgetTracker() {
           </>
         ) : (
           <>
-            <h2 className="text-3xl font-bold text-center text-[#0D3B66] mb-6">
-              Your Itinerary & Budget
-            </h2>
+            <h2 className="text-3xl font-bold text-center text-[#0D3B66] mb-6">Your Itinerary & Budget</h2>
 
-            {destinations.map((destination) => {
-              const chosenActivities = destination.activities.filter((a) =>
-                selected.includes(a.id)
-              );
-              if (chosenActivities.length === 0) return null;
+            {destinations.map(dest => {
+              const chosen = (dest.activities || []).filter(a => selected.includes(a._id || a.id));
+              if (!chosen.length) return null;
               return (
-                <div key={destination.id} className="bg-gray-100 p-6 rounded-xl shadow mb-6">
-                  <h3 className="text-xl font-bold text-[#0D3B66] mb-2">{destination.name}</h3>
+                <div key={dest._id || dest.id} className="bg-gray-100 p-6 rounded-xl shadow mb-6">
+                  <h3 className="text-xl font-bold text-[#0D3B66] mb-2">{dest.name}</h3>
                   <ul className="space-y-2">
-                    {chosenActivities.map((activity) => (
-                      <li key={activity.id} className="flex justify-between text-gray-700">
-                        <span>{activity.name}</span>
-                        <span className="font-semibold text-teal-700">₹{activity.price}</span>
+                    {chosen.map(a => (
+                      <li key={a._id || a.id} className="flex justify-between text-gray-700">
+                        <span>{a.name}</span>
+                        <span className="font-semibold text-teal-700">₹{a.price}</span>
                       </li>
                     ))}
                   </ul>
@@ -167,11 +181,10 @@ export default function BudgetTracker() {
 
             <div className="text-center mt-6">
               <h3 className="text-2xl font-bold text-[#0D3B66]">Total Budget: ₹{total}</h3>
-
               {!paid ? (
                 <button
                   className="mt-4 px-6 py-2 bg-green-600 text-white rounded-xl shadow hover:bg-green-700 transition"
-                  onClick={() => setPaid(true)}
+                  onClick={handlePayNow}
                 >
                   Pay Now
                 </button>
@@ -181,7 +194,7 @@ export default function BudgetTracker() {
 
               <button
                 className="mt-4 ml-3 px-6 py-2 bg-gray-500 text-white rounded-xl shadow hover:bg-gray-600 transition"
-                onClick={handleBack}
+                onClick={() => setConfirmed(false)}
               >
                 Go Back
               </button>

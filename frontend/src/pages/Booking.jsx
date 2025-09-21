@@ -6,7 +6,9 @@ export default function MyBookings() {
   const { packageId } = useParams(); // get package id from URL
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("userInfo"));
-
+  if (!user || !user.token) {
+    navigate("/login");
+  }
   const [pkg, setPkg] = useState(null);
   const [guides, setGuides] = useState([]);
   const [selectedGuide, setSelectedGuide] = useState(null);

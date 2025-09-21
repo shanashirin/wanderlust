@@ -1,15 +1,28 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export default function GuideProfile() {
   const navigate = useNavigate();
+  const [guide, setGuide] = useState(null);
+
+  useEffect(() => {
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+    if (!userInfo || !userInfo.token) {
+      navigate("/login");
+    } else {
+      setGuide(userInfo);
+    }
+  }, [navigate]);
 
   const handleEdit = () => {
-    navigate("/guide-profile/edit"); // 👉 Redirects to edit profile page
+    navigate("/guide-profile/edit");
   };
 
   const handleReviews = () => {
-    navigate("/guide-profile/reviews"); // 👉 Redirects to reviews page
+    navigate("/guide-profile/reviews"); // Guide reviews page
   };
+
+  if (!guide) return null; // Loading or redirect
 
   return (
     <div
@@ -23,7 +36,6 @@ export default function GuideProfile() {
       <div className="relative z-10 max-w-4xl mx-auto px-6 py-10">
         {/* Navbar */}
         <div className="flex justify-between items-center mb-8">
-          {/* Logo */}
           <Link to="/" className="flex items-center">
             <span className="text-2xl font-extrabold">
               <span className="text-yellow-600">Wander</span>
@@ -31,7 +43,6 @@ export default function GuideProfile() {
             </span>
           </Link>
 
-          {/* Back to Dashboard */}
           <Link
             to="/guide-dashboard"
             className="text-teal-700 font-medium hover:text-[#E67E22] transition"
@@ -45,41 +56,40 @@ export default function GuideProfile() {
           {/* Profile Picture */}
           <div className="flex justify-center mb-6">
             <img
-              src="https://picsum.photos/150"
+              src={guide.profilePicture || "https://picsum.photos/150"}
               alt="Guide Profile"
               className="w-32 h-32 rounded-full border-4 border-teal-500 shadow-md"
             />
           </div>
 
           {/* Guide Name + Role */}
-          <h1 className="text-3xl font-bold text-gray-800">John Doe</h1>
+          <h1 className="text-3xl font-bold text-gray-800">{guide.fullName}</h1>
           <p className="text-lg text-gray-600 mb-6">🌍 Professional Tour Guide</p>
 
           {/* Info Section */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left mb-8">
             <div>
               <p className="font-semibold text-gray-700">📍 Location</p>
-              <p className="text-gray-600">Kathmandu, Nepal</p>
+              <p className="text-gray-600">{guide.location || "N/A"}</p>
             </div>
             <div>
               <p className="font-semibold text-gray-700">📞 Phone</p>
-              <p className="text-gray-600">+91 98765 43210</p>
+              <p className="text-gray-600">{guide.phone || "N/A"}</p>
             </div>
             <div>
               <p className="font-semibold text-gray-700">📧 Email</p>
-              <p className="text-gray-600">johndoe@email.com</p>
+              <p className="text-gray-600">{guide.email}</p>
             </div>
             <div>
               <p className="font-semibold text-gray-700">⭐ Rating</p>
-              <p className="text-yellow-500">4.8 / 5</p>
+              <p className="text-yellow-500">{guide.rating || "N/A"} / 5</p>
             </div>
           </div>
 
           {/* Bio */}
           <p className="text-gray-700 mb-8 leading-relaxed">
-            I am an experienced trekking and cultural tour guide with over 10 years
-            of guiding adventurers through the Himalayas. I specialize in
-            personalized and unforgettable travel experiences.
+            {guide.bio ||
+              "I am an experienced trekking and cultural tour guide with years of guiding adventurers through unforgettable trips."}
           </p>
 
           {/* Action Buttons */}

@@ -1,15 +1,19 @@
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
+import { toast } from "react-toastify"
 
 export default function AdminDashboard() {
-      const guide = JSON.parse(localStorage.getItem("userInfo"));
-    console.log(guide)
+  const guide = JSON.parse(localStorage.getItem("userInfo"));
+  console.log(guide)
 
-    useEffect(() => {
-      if (!guide || !guide.token) {
-        window.location.href = "/login";
-      }
-    }, [guide]);
+  useEffect(() => {
+    if (!guide || !guide.token) {
+      window.location.href = "/login";
+    } else if (guide.role !== "admin") {
+      toast.error("Access denied. Admins only.");
+      window.location.href = "/";
+    }
+  }, [guide]);
   return (
     <div
       className="min-h-screen bg-cover bg-center relative"
@@ -20,7 +24,7 @@ export default function AdminDashboard() {
 
       {/* Dashboard Content */}
       <div className="relative z-10 max-w-6xl mx-auto px-6 py-10">
-         {/* Navbar with Logo */}
+        {/* Navbar with Logo */}
         <div className="flex justify-between items-center mb-8">
           <Link to="/" className="flex items-center">
             <span className="text-2xl font-extrabold">
@@ -43,7 +47,8 @@ export default function AdminDashboard() {
             { title: "Manage Guides", icon: "🧑‍🏫", link: "/admin/guides" },
             { title: "Manage Users", icon: "👥", link: "/admin/users" },
             { title: "Add Packages", icon: "📦", link: "/admin/packages" },
-              { title: "Payments", icon: "💳", link: "/admin/payments" }, // NEW CARD
+            { title: "Payments", icon: "💳", link: "/admin/payments" }, // NEW CARD
+            { title: "Reviews", icon: "⭐", link: "/admin/reviews" },
 
           ].map((item, i) => (
             <Link

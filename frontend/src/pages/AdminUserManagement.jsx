@@ -23,7 +23,9 @@ export default function AdminUserManagement() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        setUsers(data);
+        // Filter only role === 'user'
+        const onlyUsers = data.filter((u) => u.role === "user");
+        setUsers(onlyUsers);
       } catch (err) {
         console.error("Failed to fetch users:", err);
         alert("Cannot load users. Check your network.");
@@ -50,7 +52,7 @@ export default function AdminUserManagement() {
     }
   };
 
-  // Optional: Toggle verification
+  // Toggle verification
   const toggleVerification = async (user) => {
     try {
       const res = await fetch(`http://localhost:5000/api/users/${user._id}/verify`, {
@@ -69,7 +71,10 @@ export default function AdminUserManagement() {
   if (loading) return <p className="text-center mt-10">Loading users...</p>;
 
   return (
-    <div className="min-h-screen py-10 px-6 ">
+    <div
+    className="min-h-screen bg-cover bg-center relative p-6"
+    style={{ backgroundImage: "url('../public/images/balloon.png')" }}
+  >
       <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Admin – User Management</h1>
@@ -97,7 +102,9 @@ export default function AdminUserManagement() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => toggleVerification(user)}
-                    className={`px-3 py-1 rounded-lg ${user.isVerified ? "bg-yellow-500 text-white" : "bg-green-600 text-white"
+                    className={`px-3 py-1 rounded-lg ${user.isVerified
+                        ? "bg-yellow-500 text-white"
+                        : "bg-green-600 text-white"
                       } hover:opacity-90`}
                   >
                     {user.isVerified ? "Unverify" : "Verify"}

@@ -24,13 +24,15 @@ import AdminGuideManagement from "./pages/ManageGuides";
 import AdminUserManagement from "./pages/AdminUserManagement";
 import AdminPackagesManagement from "./pages/AdminPackages";
 import AdminPayments from "./pages/AdminPayment";
-
-
+import AdminReviews from "./pages/AdminReviews";
+import PackageDetails from "./pages/PackageDetial";
+import NotFound from "./pages/notfound";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/package/:id" element={<PackageDetails />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<UserDashboard />} />
@@ -56,8 +58,8 @@ export default function App() {
       <Route path="/admin/users" element={<AdminUserManagement />} />
       <Route path="/admin/packages" element={<AdminPackagesManagement />} />
       <Route path="/admin/Payments" element={<AdminPayments />} />
-
-
+      <Route path="/admin/reviews" element={<AdminReviews />} />
+      <Route path="*" element={<NotFound />} />
 
     </Routes>
   );

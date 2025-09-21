@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify"
 
 export default function UserDashboard() {
   const user = JSON.parse(localStorage.getItem("userInfo"));
@@ -7,6 +8,9 @@ export default function UserDashboard() {
   useEffect(() => {
     if (!user || !user.token) {
       window.location.href = "/login";
+    } else if (user.role !== "user") {
+      toast.error("Access denied. Users only.");
+      window.location.href = "/";
     }
   }, [user]);
 

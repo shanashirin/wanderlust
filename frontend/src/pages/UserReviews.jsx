@@ -1,57 +1,80 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Select from "react-select";
 
 export default function UserReviews() {
+  const user = JSON.parse(localStorage.getItem("userInfo"));
+
   const [formData, setFormData] = useState({
-    guideReview: "",
-    placeReview: "",
-    siteReview: "",
+    reviewType: "guide", // default type
+    selectedGuideId: "",
+    selectedPlace: "",
+    comment: "",
     rating: 0,
   });
 
+  const [guides, setGuides] = useState([]);
   const [submitted, setSubmitted] = useState(false);
 
-  // ✅ Handle input
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!user || !user.token) window.location.href = "/login";
+  }, [user]);
+
+  // Fetch guides from backend
+  useEffect(() => {
+    const fetchGuides = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/users/guides", {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+        const data = await res.json();
+        setGuides(data);
+      } catch (err) {
+        console.error("❌ Failed to fetch guides:", err);
+      }
+    };
+    fetchGuides();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Handle rating stars
   const handleRating = (value) => {
     setFormData((prev) => ({ ...prev, rating: value }));
   };
 
-  // ✅ Submit review to backend
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user) return alert("You must be logged in to submit a review");
+
+    // Construct payload
+    const payload = {
+      type: formData.reviewType,
+      userId: user._id,
+      comment: formData.comment,
+      rating: formData.rating,
+    };
+
+    if (formData.reviewType === "guide") payload.guideId = formData.selectedGuideId;
+    if (formData.reviewType === "place") payload.place = formData.selectedPlace;
+
     try {
       const res = await fetch("http://localhost:5000/api/reviews", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: formData.guideReview
-            ? "guide"
-            : formData.placeReview
-            ? "place"
-            : "site",
-          user: "Alice", // 🔹 Replace later with logged-in user
-          guideId: formData.guideReview ? "64f1234abc..." : undefined, // 🔹 dynamic later
-          place: formData.placeReview ? "Kerala" : undefined, // 🔹 dynamic later
-          comment:
-            formData.guideReview ||
-            formData.placeReview ||
-            formData.siteReview,
-          rating: formData.rating,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify(payload),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to submit review");
 
-      console.log("✅ Review saved:", data);
       setSubmitted(true);
     } catch (err) {
-      console.error("❌ Error:", err);
+      console.error(err);
       alert(err.message);
     }
   };
@@ -61,10 +84,8 @@ export default function UserReviews() {
       className="min-h-screen bg-cover bg-center relative flex items-center justify-center p-6"
       style={{ backgroundImage: "url('../public/images/balloon.png')" }}
     >
-      {/* Blur Overlay */}
       <div className="absolute inset-0 bg-white/40 backdrop-blur-md"></div>
 
-      {/* Review Card */}
       <div className="relative z-10 bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl p-8 w-full max-w-3xl">
         <h2 className="text-3xl font-bold text-center text-[#0D3B66] mb-6">
           Share Your Experience
@@ -81,67 +102,77 @@ export default function UserReviews() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Guide Review */}
+            {/* Review Type Selector */}
             <div>
               <label className="block text-gray-700 font-medium mb-2">
-                Review Your Guide
+                Select Review Type
               </label>
-              <textarea
-                name="guideReview"
-                value={formData.guideReview}
+              <select
+                name="reviewType"
+                value={formData.reviewType}
                 onChange={handleChange}
-                placeholder="How was your guide?"
-                className="w-full p-3 rounded-lg border shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                rows="3"
-              />
+                className="w-full p-2 rounded-lg border"
+              >
+                <option value="guide">Guide</option>
+                <option value="place">Place</option>
+                <option value="site">Website</option>
+              </select>
             </div>
 
-            {/* Place Review */}
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Review the Places You Visited
-              </label>
-              <textarea
-                name="placeReview"
-                value={formData.placeReview}
-                onChange={handleChange}
-                placeholder="What did you like about the destinations?"
-                className="w-full p-3 rounded-lg border shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                rows="3"
-              />
-            </div>
+            {/* Conditional Guide Selector */}
+            {formData.reviewType === "guide" && (
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">Select Guide</label>
+                <Select
+                  options={guides.map((g) => ({ value: g._id, label: g.fullName }))}
+                  onChange={(selected) =>
+                    setFormData((prev) => ({ ...prev, selectedGuideId: selected.value }))
+                  }
+                  placeholder="Select a guide..."
+                  isSearchable
+                />
+              </div>
+            )}
 
-            {/* Site Review */}
+            {/* Conditional Place Input */}
+            {formData.reviewType === "place" && (
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">Place Name</label>
+                <input
+                  type="text"
+                  name="selectedPlace"
+                  value={formData.selectedPlace}
+                  onChange={handleChange}
+                  placeholder="Enter place name"
+                  className="w-full p-2 rounded-lg border"
+                />
+              </div>
+            )}
+
+            {/* Comment */}
             <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Review Our Website
-              </label>
+              <label className="block text-gray-700 font-medium mb-2">Your Review</label>
               <textarea
-                name="siteReview"
-                value={formData.siteReview}
+                name="comment"
+                value={formData.comment}
                 onChange={handleChange}
-                placeholder="Was this site helpful for planning your trip?"
+                placeholder="Write your review..."
                 className="w-full p-3 rounded-lg border shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                rows="3"
+                rows="4"
               />
             </div>
 
             {/* Rating */}
             <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Overall Rating
-              </label>
+              <label className="block text-gray-700 font-medium mb-2">Overall Rating</label>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     type="button"
                     key={star}
                     onClick={() => handleRating(star)}
-                    className={`text-2xl ${
-                      formData.rating >= star
-                        ? "text-yellow-500"
-                        : "text-gray-400"
-                    }`}
+                    className={`text-2xl ${formData.rating >= star ? "text-yellow-500" : "text-gray-400"
+                      }`}
                   >
                     ★
                   </button>

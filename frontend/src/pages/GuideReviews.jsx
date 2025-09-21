@@ -1,24 +1,38 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 export default function GuideReviews() {
-  // Dummy reviews – later fetch from backend
-  const reviews = [
-    {
-      user: "Alice",
-      rating: 5,
-      comment: "Amazing experience! Highly recommend.",
-    },
-    {
-      user: "Ravi",
-      rating: 4,
-      comment: "Very friendly and knowledgeable guide.",
-    },
-    {
-      user: "Sophia",
-      rating: 5,
-      comment: "Made our trip unforgettable!",
-    },
-  ];
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Get logged-in guide info
+  const guide = JSON.parse(localStorage.getItem("userInfo"));
+
+  useEffect(() => {
+    const guide = JSON.parse(localStorage.getItem("userInfo"));
+    if (!guide || !guide.token) {
+      window.location.href = "/login";
+      return;
+    }
+    const fetchReviews = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/reviews/guides/${guide._id}`,
+          {
+            headers: { Authorization: `Bearer ${guide.token}` },
+          }
+        );
+        const data = await res.json();
+        setReviews(data);
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to fetch reviews:", err);
+        setLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, []);
 
   return (
     <div
@@ -40,23 +54,32 @@ export default function GuideReviews() {
           </Link>
         </div>
 
+        {/* Loading */}
+        {loading && <p className="text-gray-700">Loading reviews...</p>}
+
         {/* Reviews List */}
-        <div className="space-y-6">
-          {reviews.map((review, index) => (
-            <div
-              key={index}
-              className="bg-white/95 p-6 rounded-2xl shadow-md"
-            >
-              <p className="font-semibold text-gray-800">
-                {review.user} -{" "}
-                <span className="text-yellow-500">
-                  {"⭐".repeat(review.rating)}
-                </span>
-              </p>
-              <p className="text-gray-600 mt-2">{review.comment}</p>
-            </div>
-          ))}
-        </div>
+        {!loading && reviews.length === 0 && (
+          <p className="text-gray-700">No reviews yet.</p>
+        )}
+
+        {!loading && reviews.length > 0 && (
+          <div className="space-y-6">
+            {reviews.map((review, index) => (
+              <div
+                key={index}
+                className="bg-white/95 p-6 rounded-2xl shadow-md"
+              >
+                <p className="font-semibold text-gray-800">
+                  {review.userName || review.user} -{" "}
+                  <span className="text-yellow-500">
+                    {"⭐".repeat(review.rating)}
+                  </span>
+                </p>
+                <p className="text-gray-600 mt-2">{review.comment}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

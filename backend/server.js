@@ -11,6 +11,7 @@ import guideRoutes from "./routes/guide.js";
 import bookingRoutes from "./routes/booking.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import expenseRoutes from "./routes/expenseRoutes.js";
+import paymentRoutes from "./routes/payments.js";
 
 dotenv.config();
 
@@ -55,10 +56,8 @@ app.use("/admin", adminRoutes);
 app.use("/guides", guideRoutes);
 app.use("/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
-app.post("/api/reviews", (req, res) => {
-  console.log("📩 Incoming Review:", req.body);
-  res.status(201).json({ success: true, review: req.body });
-});
+app.use("/api/payments", paymentRoutes);
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
