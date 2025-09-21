@@ -45,3 +45,18 @@ export const deletePackage = async (req, res) => {
     res.status(500).json({ message: "Failed to delete package" });
   }
 };
+
+
+
+// GET single package
+export const getPackageById = async (req, res) => {
+  try {
+    const pkg = await Package.findById(req.params.id);
+    if (!pkg) {
+      return res.status(404).json({ message: "Package not found" });
+    }
+    res.json(pkg);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

@@ -10,6 +10,7 @@ import adminRoutes from "./routes/admin.js";
 import guideRoutes from "./routes/guide.js";
 import bookingRoutes from "./routes/booking.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
+import expenseRoutes from "./routes/expenseRoutes.js";
 
 dotenv.config();
 
@@ -48,6 +49,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use("/api/users", userRoutes);
+app.use("/api/expenses", expenseRoutes);
 app.use("/api/packages", packageRoutes);
 app.use("/admin", adminRoutes);
 app.use("/guides", guideRoutes);

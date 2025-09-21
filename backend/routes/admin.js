@@ -1,6 +1,6 @@
 // routes/admin.js
 import express from "express";
-import Itinerary from "../models/Itinerary.js";
+import Itinerary from "../models/itinerary.js";
 const router = express.Router();
 
 // Add itinerary

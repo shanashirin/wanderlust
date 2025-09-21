@@ -1,8 +1,16 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 export default function UserDashboard() {
   const user = JSON.parse(localStorage.getItem("userInfo"));
-  console.log(user)
+
+  useEffect(() => {
+    if (!user || !user.token) {
+      window.location.href = "/login";
+    }
+  }, [user]);
+
+  const selectedPackage = JSON.parse(localStorage.getItem("selectedPackage"));
   return (
     <div
       className="min-h-screen bg-cover bg-center relative"
@@ -29,7 +37,7 @@ export default function UserDashboard() {
             className="text-3xl font-extrabold text-center"
             style={{ color: "#0D3B66" }}
           >
-            Welcome {user.fullName}
+            Welcome {user?.fullName}
           </h1>
         </div>
 
@@ -78,15 +86,18 @@ export default function UserDashboard() {
 
         {/* Logout Button */}
         <div className="flex justify-end mt-6">
-          <Link
-            to="/login"
+          <button
+            onClick={() => {
+              localStorage.removeItem("userInfo");
+              window.location.href = "/";
+            }}
             className="px-6 py-2 rounded-lg shadow-md text-white transition"
             style={{ backgroundColor: "#E74C3C" }}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#c0392b")}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#E74C3C")}
           >
             Logout
-          </Link>
+          </button>
         </div>
       </div>
     </div>

@@ -1,171 +1,116 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function GuideBookings() {
-  // ✅ Current logged-in guide (dummy → replace with auth later)
-  const currentGuide = { id: 101, name: "Guide A" };
-
-  // ✅ Guide’s availability & booking status
+  const guide = JSON.parse(localStorage.getItem("userInfo")); // logged-in guide
+  const [bookings, setBookings] = useState([]);
   const [isAvailable, setIsAvailable] = useState(true);
-  const [isBooked, setIsBooked] = useState(false);
 
-  // ✅ Bookings from users (dummy → later fetch from API)
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      user: "Alice",
-      destination: "Everest Base Camp",
-      date: "2025-09-05",
-      status: "pending",
-      guideId: 101,
-    },
-    {
-      id: 2,
-      user: "Ravi",
-      destination: "Pokhara City Tour",
-      date: "2025-09-12",
-      status: "pending",
-      guideId: 101,
-    },
-    {
-      id: 3,
-      user: "Sophia",
-      destination: "Annapurna Trek",
-      date: "2025-09-20",
-      status: "accepted",
-      guideId: 101,
-    },
-  ]);
+  // ✅ Fetch guide's bookings
+  useEffect(() => {
+    const guide = JSON.parse(localStorage.getItem("userInfo")); // logged-in guide
 
-  // ✅ Only show this guide’s bookings
-  const myBookings = bookings.filter(
-    (booking) => booking.guideId === currentGuide.id
-  );
+    const fetchBookings = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/bookings/guide/${guide._id}`, {
+          headers: { Authorization: `Bearer ${guide.token}` },
+        });
+        const data = await res.json();
+        setBookings(data);
+      } catch (err) {
+        console.error("Failed to fetch guide bookings:", err);
+        toast.error("Failed to load bookings");
+      }
+    };
+    fetchBookings();
+  }, []);
 
-  // ✅ Accept / Decline Booking
-  const updateBookingStatus = (id, newStatus) => {
-    setBookings((prev) =>
-      prev.map((b) =>
-        b.id === id ? { ...b, status: newStatus } : b
-      )
-    );
-  };
+  // ✅ Update booking status
+  const updateBookingStatus = async (id, status) => {
+    try {
+      const res = await fetch(`http://localhost:5000/bookings/${id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${guide.token}`,
+        },
+        body: JSON.stringify({ status }),
+      });
 
-  // ✅ Toggle availability
-  const toggleAvailability = () => {
-    setIsAvailable(!isAvailable);
-  };
-
-  // ✅ Toggle manual booked status
-  const toggleBooked = () => {
-    setIsBooked(!isBooked);
+      const updated = await res.json();
+      setBookings((prev) =>
+        prev.map((b) => (b._id === updated._id ? updated : b))
+      );
+      toast.success(`Booking ${status}`);
+    } catch (err) {
+      console.error("Failed to update status:", err);
+      toast.error("Failed to update booking");
+    }
   };
 
   return (
-    <div
-      className="min-h-screen bg-cover bg-center relative"
-      style={{ backgroundImage: "url('../public/images/balloon.png')" }}
-    >
-      {/* Blur Overlay */}
+    <div className="min-h-screen bg-cover bg-center relative" style={{ backgroundImage: "url('../public/images/balloon.png')" }}>
       <div className="absolute inset-0 bg-white/40 backdrop-blur-md"></div>
 
-      {/* Page Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-6 py-10">
         {/* Navbar */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-[#0D3B66]">
-            {currentGuide.name}'s Bookings
-          </h1>
-          <Link
-            to="/guide-dashboard"
-            className="text-teal-700 font-medium hover:text-[#E67E22] transition"
-          >
+          <h1 className="text-3xl font-bold text-[#0D3B66]">{guide.fullName}'s Bookings</h1>
+          <Link to="/guide-dashboard" className="text-teal-700 font-medium hover:text-[#E67E22] transition">
             ← Back to Dashboard
           </Link>
         </div>
 
-        {/* Availability + Booked Status */}
-        <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white/80 rounded-xl shadow p-4">
+        {/* Availability toggle */}
+        <div className="mb-8 flex items-center justify-between bg-white/80 rounded-xl shadow p-4">
           <p className="font-semibold text-gray-800">
-            Availability:{" "}
-            {isAvailable ? (
-              <span className="text-green-600">✅ Available</span>
-            ) : (
-              <span className="text-red-600">❌ Not Available</span>
-            )}
+            Availability: {isAvailable ? <span className="text-green-600">✅ Available</span> : <span className="text-red-600">❌ Not Available</span>}
           </p>
-          <div className="flex gap-4">
-            <button
-              onClick={toggleAvailability}
-              className={`px-4 py-2 rounded-lg text-white shadow-md transition ${
-                isAvailable
-                  ? "bg-red-600 hover:bg-red-700"
-                  : "bg-green-600 hover:bg-green-700"
+          <button
+            onClick={() => setIsAvailable(!isAvailable)}
+            className={`px-4 py-2 rounded-lg text-white shadow-md transition ${isAvailable ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"
               }`}
-            >
-              {isAvailable ? "Mark as Unavailable" : "Mark as Available"}
-            </button>
-
-            <button
-              onClick={toggleBooked}
-              className={`px-4 py-2 rounded-lg text-white shadow-md transition ${
-                isBooked
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : "bg-gray-600 hover:bg-gray-700"
-              }`}
-            >
-              {isBooked ? "Booked" : "Not Booked"}
-            </button>
-          </div>
+          >
+            {isAvailable ? "Mark as Unavailable" : "Mark as Available"}
+          </button>
         </div>
 
         {/* Bookings List */}
         <div className="space-y-6">
-          {myBookings.length === 0 ? (
-            <p className="text-gray-600 text-center">
-              No booking requests yet.
-            </p>
+          {bookings.length === 0 ? (
+            <p className="text-gray-600 text-center">No booking requests yet.</p>
           ) : (
-            myBookings.map((booking) => (
-              <div
-                key={booking.id}
-                className="bg-white/95 rounded-xl shadow-lg p-6 flex justify-between items-center"
-              >
-                {/* Booking Info */}
+            bookings.map((booking) => (
+              <div key={booking._id} className="bg-white/95 rounded-xl shadow-lg p-6 flex justify-between items-center">
+                {/* Info */}
                 <div>
-                  <p className="font-bold text-lg text-gray-800">
-                    {booking.user}
-                  </p>
-                  <p className="text-gray-600">📍 {booking.destination}</p>
-                  <p className="text-gray-500">📅 {booking.date}</p>
+                  <p className="font-bold text-lg text-gray-800">{booking.userId?.fullName}</p>
+                  <p className="text-gray-600">📍 {booking.packageId?.destination}</p>
+                  <p className="text-gray-500">📅 {new Date(booking.date).toLocaleDateString()}</p>
                   <p
-                    className={`mt-1 font-medium ${
-                      booking.status === "accepted"
-                        ? "text-green-600"
-                        : booking.status === "declined"
+                    className={`mt-1 font-medium ${booking.status === "accepted"
+                      ? "text-green-600"
+                      : booking.status === "declined"
                         ? "text-red-600"
                         : "text-yellow-600"
-                    }`}
+                      }`}
                   >
                     Status: {booking.status}
                   </p>
                 </div>
 
-                {/* Action Buttons */}
-                {booking.status === "pending" && isAvailable && !isBooked && (
+                {/* Actions */}
+                {booking.status === "pending" && isAvailable && (
                   <div className="flex gap-3">
                     <button
-                      onClick={() =>
-                        updateBookingStatus(booking.id, "accepted")
-                      }
+                      onClick={() => updateBookingStatus(booking._id, "accepted")}
                       className="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700"
                     >
                       Accept
                     </button>
                     <button
-                      onClick={() =>
-                        updateBookingStatus(booking.id, "declined")
-                      }
+                      onClick={() => updateBookingStatus(booking._id, "declined")}
                       className="px-4 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700"
                     >
                       Decline
