@@ -1,8 +1,14 @@
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function GuideDashboard() {
-    const guide = JSON.parse(localStorage.getItem("userInfo"));
-    console.log(guide)
+  const guide = JSON.parse(localStorage.getItem("userInfo"));
+
+  useEffect(() => {
+    if (!guide || !guide.token) {
+      window.location.href = "/login";
+    }
+  }, [guide]);
   return (
     <div
       className="min-h-screen bg-cover bg-center relative"
@@ -13,7 +19,7 @@ export default function GuideDashboard() {
 
       {/* Dashboard Content */}
       <div className="relative z-10 max-w-6xl mx-auto px-6 py-10">
-         {/* Navbar with Logo */}
+        {/* Navbar with Logo */}
         <div className="flex justify-between items-center mb-8">
           <Link to="/" className="flex items-center">
             <span className="text-2xl font-extrabold">
@@ -29,7 +35,7 @@ export default function GuideDashboard() {
             className="text-3xl font-extrabold text-center"
             style={{ color: "#0D3B66" }}
           >
-            Welcome {guide.fullName}
+            Welcome {guide?.fullName}
           </h1>
         </div>
 
@@ -62,15 +68,18 @@ export default function GuideDashboard() {
 
         {/* Logout Button aligned bottom-right */}
         <div className="flex justify-end mt-6">
-          <Link
-            to="/login"
+          <button
+            onClick={() => {
+              localStorage.removeItem("userInfo");
+              window.location.href = "/";
+            }}
             className="px-6 py-2 rounded-lg shadow-md text-white transition"
             style={{ backgroundColor: "#E74C3C" }}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#C0392B")}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#E74C3C")}
           >
             Logout
-          </Link>
+          </button>
         </div>
       </div>
     </div>

@@ -1,8 +1,15 @@
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function AdminDashboard() {
       const guide = JSON.parse(localStorage.getItem("userInfo"));
     console.log(guide)
+
+    useEffect(() => {
+      if (!guide || !guide.token) {
+        window.location.href = "/login";
+      }
+    }, [guide]);
   return (
     <div
       className="min-h-screen bg-cover bg-center relative"
@@ -57,12 +64,15 @@ export default function AdminDashboard() {
 
         {/* Logout */}
         <div className="flex justify-end mt-6">
-          <Link
-            to="/login"
+          <button
+            onClick={() => {
+              localStorage.removeItem("userInfo");
+              window.location.href = "/";
+            }}
             className="bg-[#E74C3C] text-white px-6 py-2 rounded-lg shadow-md hover:bg-red-700 transition"
           >
             Logout
-          </Link>
+          </button>
         </div>
       </div>
     </div>

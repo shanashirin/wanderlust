@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
-import { Search } from "lucide-react"; // ✅ search icon
+import { useNavigate } from "react-router-dom";
+import { Search } from "lucide-react";
 
 export default function ExplorePackages() {
   const [packages, setPackages] = useState([]);
   const [visible, setVisible] = useState(3);
-  const [search, setSearch] = useState(""); // input value
-  const [query, setQuery] = useState("");   // applied filter
+  const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
+  const navigate = useNavigate();
 
-  // ✅ Fetch packages from backend
+  // Fetch packages from backend
   useEffect(() => {
     const fetchPackages = async () => {
       try {
@@ -24,17 +25,21 @@ export default function ExplorePackages() {
 
   const loadMore = () => setVisible((prev) => prev + 3);
 
-  // ✅ Filter packages only when query is applied
   const filteredPackages = packages.filter(
     (pkg) =>
       pkg.title.toLowerCase().includes(query.toLowerCase()) ||
       pkg.destination.toLowerCase().includes(query.toLowerCase())
   );
 
-  // ✅ Apply search when button clicked
   const handleSearch = () => {
     setQuery(search);
-    setVisible(3); // reset visible count on new search
+    setVisible(3); // reset visible count
+  };
+
+  const handleViewDetails = (pkg) => {
+    localStorage.setItem("selectedPackage", JSON.stringify(pkg));
+    // ✅ Navigate to MyBookings page with packageId
+    navigate(`/bookings/${pkg._id}`);
   };
 
   return (
@@ -49,16 +54,19 @@ export default function ExplorePackages() {
           Explore Adventure Tours
         </h1>
 
-        {/* ✅ Search Bar with Icon + Button */}
+        {/* Search Bar */}
         <div className="flex justify-center mb-8">
           <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
+            />
             <input
               type="text"
               placeholder="Search destinations..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()} // press Enter to search
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               className="w-full pl-10 pr-24 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#3E7C6F] focus:outline-none"
             />
             <button
@@ -70,6 +78,7 @@ export default function ExplorePackages() {
           </div>
         </div>
 
+        {/* Packages Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-8">
           {filteredPackages.length > 0 ? (
             filteredPackages.slice(0, visible).map((pkg) => (
@@ -88,8 +97,12 @@ export default function ExplorePackages() {
                 </p>
                 <p className="text-green-600 font-semibold mt-2">${pkg.price}</p>
                 <p className="text-yellow-500 text-sm">⭐ {pkg.rating}</p>
-                <button className="mt-3 w-full bg-[#3E7C6F] text-white py-2 rounded-md hover:bg-[#2f6153] transition">
-                  View Details
+                {/* ✅ Book / View Details */}
+                <button
+                  onClick={() => handleViewDetails(pkg)}
+                  className="mt-3 w-full bg-[#3E7C6F] text-white py-2 rounded-md hover:bg-[#2f6153] transition"
+                >
+                  Plan & Book
                 </button>
               </div>
             ))
@@ -100,6 +113,7 @@ export default function ExplorePackages() {
           )}
         </div>
 
+        {/* Load More */}
         {visible < filteredPackages.length && (
           <div className="flex justify-center">
             <button

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Home() {
+  const navigate = useNavigate();
   // All Featured Packages
   const featuredPackages = [
     {
@@ -72,6 +73,10 @@ export default function Home() {
   const loadMore = () => {
     setVisible((prev) => prev + 3);
   };
+
+  const handleClick = () => {
+    navigate("/dashboard");
+  }
 
   return (
     <div
@@ -146,6 +151,7 @@ export default function Home() {
               >
                 Explore Packages
               </button>
+             
             </div>
           </div>
 
@@ -191,6 +197,17 @@ export default function Home() {
                 }
               >
                 View Details
+              </button>
+              <button className="mt-2 w-full text-white py-2 rounded-md" style={{ backgroundColor: "#0D3B66" }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#0a2a4d")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#0D3B66")
+                }
+                onClick={() => handleClick()}
+              >
+                Book Now
               </button>
             </div>
           ))}

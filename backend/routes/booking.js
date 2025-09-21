@@ -1,25 +1,26 @@
-// routes/booking.js
 import express from "express";
-import Booking from "../models/Booking.js";
+import {
+  getUserBookings,
+  createBooking,
+  updateBookingStatus,
+  getBookingById,
+  getGuideBookings
+} from "../controllers/bookingController.js";
+import { protect } from "../middleware/authMiddleware.js";
+
 const router = express.Router();
 
-// User creates booking
-router.post("/", async (req, res) => {
-  try {
-    const booking = new Booking(req.body);
-    await booking.save();
-    res.json(booking);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// ✅ Create a booking (user)
+router.post("/", protect, createBooking);
 
-// Guide updates booking status
-router.patch("/:id/status", async (req, res) => {
-  const booking = await Booking.findById(req.params.id);
-  booking.status = req.body.status;
-  await booking.save();
-  res.json(booking);
-});
+// ✅ Guide updates booking status
+router.patch("/:id/status", protect, updateBookingStatus);
 
+// ✅ Get all bookings for a specific user
+router.get("/user/:userId", protect, getUserBookings);
+
+// ✅ Get booking by ID
+router.get("/:id", protect, getBookingById);
+// ✅ Get all bookings for a specific guide
+router.get("/guide/:guideId", protect, getGuideBookings);
 export default router;
