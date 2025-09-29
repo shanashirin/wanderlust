@@ -17,6 +17,7 @@ const guideReviewSchema = new mongoose.Schema({
 const placeReviewSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   place: { type: String, required: true },
+  packageId: { type: mongoose.Schema.Types.ObjectId, ref: "Package" },
   rating: { type: Number, required: true, min: 1, max: 5 },
   comment: { type: String, required: true },
 }, baseOptions);

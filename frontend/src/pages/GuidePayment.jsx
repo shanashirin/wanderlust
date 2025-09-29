@@ -13,7 +13,7 @@ export default function GuidePayments() {
         const user = JSON.parse(localStorage.getItem("userInfo"));
         if (!user || !user.token) throw new Error("Not authenticated");
 
-        const res = await fetch("http://localhost:5000/api/payments", {
+        const res = await fetch("http://localhost:5000/api/payments/all", {
           headers: { Authorization: `Bearer ${user.token}` },
         });
 

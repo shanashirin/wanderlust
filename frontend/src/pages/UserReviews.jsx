@@ -8,12 +8,17 @@ export default function UserReviews() {
     reviewType: "guide", // default type
     selectedGuideId: "",
     selectedPlace: "",
+    selectedPackageId: "",
     comment: "",
     rating: 0,
   });
 
   const [guides, setGuides] = useState([]);
   const [submitted, setSubmitted] = useState(false);
+  const [packages, setPackages] = useState([]);
+  const [selectedPackageId, setSelectedPackageId] = useState("");
+
+ 
 
   // Redirect if not logged in
   useEffect(() => {
@@ -33,6 +38,16 @@ export default function UserReviews() {
         console.error("❌ Failed to fetch guides:", err);
       }
     };
+    const fetchPackages = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/packages");
+        const data = await res.json();
+        setPackages(data);
+      } catch (err) {
+        console.error("❌ Failed to fetch packages:", err);
+      }
+    };
+    fetchPackages();
     fetchGuides();
   }, []);
 
@@ -58,7 +73,11 @@ export default function UserReviews() {
     };
 
     if (formData.reviewType === "guide") payload.guideId = formData.selectedGuideId;
-    if (formData.reviewType === "place") payload.place = formData.selectedPlace;
+    if (formData.reviewType === "place") {
+      payload.place = formData.selectedPlace;
+      payload.packageId = formData.selectedPackageId; // pass packageId to backend
+    }
+
 
     try {
       const res = await fetch("http://localhost:5000/api/reviews", {
@@ -78,6 +97,8 @@ export default function UserReviews() {
       alert(err.message);
     }
   };
+
+
 
   return (
     <div
@@ -137,7 +158,7 @@ export default function UserReviews() {
             {/* Conditional Place Input */}
             {formData.reviewType === "place" && (
               <div>
-                <label className="block text-gray-700 font-medium mb-2">Place Name</label>
+                <label className="block text-gray-700 font-medium mb-2">Select Place</label>
                 <input
                   type="text"
                   name="selectedPlace"
@@ -146,8 +167,27 @@ export default function UserReviews() {
                   placeholder="Enter place name"
                   className="w-full p-2 rounded-lg border"
                 />
+
+                {packages.length > 0 && (
+                  <div className="mt-2">
+                    <label className="block text-gray-700 font-medium mb-1">Select Package</label>
+                    <select
+                      value={selectedPackageId}
+                      onChange={(e) => setSelectedPackageId(e.target.value)}
+                      className="w-full p-2 rounded-lg border"
+                    >
+                      <option value="">-- Select Package --</option>
+                      {packages.map((pkg) => (
+                        <option key={pkg._id} value={pkg._id}>
+                          {pkg.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             )}
+
 
             {/* Comment */}
             <div>

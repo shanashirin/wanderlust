@@ -1,15 +1,33 @@
 import Booking from "../models/Booking.js";
 
 // Create booking
+// ✅ Create booking safely
 export const createBooking = async (req, res) => {
     try {
-        const booking = new Booking(req.body);
+        const { packageId, guideId } = req.body;
+
+        if (!packageId || !guideId) {
+            return res.status(400).json({ message: "Package and guide are required" });
+        }
+
+        // Create new booking
+        const booking = new Booking({
+            userId: req.user._id,   // always from token
+            packageId,
+            guideId,
+            status: "pending",      // default
+            date: new Date()
+        });
+
         await booking.save();
-        res.json(booking);
+
+        res.status(201).json(booking);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("❌ Booking creation failed:", err);
+        res.status(500).json({ message: err.message || "Failed to create booking" });
     }
 };
+
 
 // Update booking status
 export const updateBookingStatus = async (req, res) => {

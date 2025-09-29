@@ -74,15 +74,15 @@ export default function MyBookings() {
                       ₹{booking.packageId?.price || "N/A"}
                     </span>
                   </div>
-
+                  {console.log(booking)}
                   {/* Guide Info */}
                   <div className="text-right">
                     <h3 className="font-semibold text-gray-700">Guide</h3>
-                    <p className="text-gray-600">{booking.guideId?.name || "Not assigned"}</p>
-                    <p className="text-sm text-gray-500">{booking.guideId?.experience || ""}</p>
-                    <p className="text-yellow-500 font-semibold text-sm">
+                    <p className="text-gray-600">{booking.guideId?.fullName || "Not assigned"}</p>
+                    {/* <p className="text-sm text-gray-500">{booking.guideId?.isVerified || ""}</p> */}
+                    {/* <p className="text-yellow-500 font-semibold text-sm">
                       ⭐ {booking.guideId?.rating || "N/A"}
-                    </p>
+                    </p> */}
                   </div>
                 </div>
 
@@ -93,10 +93,14 @@ export default function MyBookings() {
                       ? "text-green-600"
                       : booking.status === "pending"
                         ? "text-yellow-600"
-                        : "text-red-600"
+                        : booking.status === "declined"
+                          ? "text-red-600"
+                          : booking.status === "paid"
+                            ? "text-teal-600"
+                            : "text-gray-600"
                       }`}
                   >
-                    Status: {booking.status}
+                    Status: {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                   </p>
                   <p className="text-gray-500 text-sm mt-1 md:mt-0">
                     Booked on: {new Date(booking.date).toLocaleDateString()}
@@ -104,14 +108,28 @@ export default function MyBookings() {
                 </div>
 
                 {/* Action Button */}
-                <div className="mt-4">
+                <div className="mt-4 flex  justify-between gap-3 flex-col w-full">
                   <button
+                    disabled={booking.status === "paid"} // Only allow if accepted or paid
                     onClick={() => navigate(`/budget/${booking._id}`)}
-                    className="w-full md:w-auto px-6 py-2 bg-teal-600 text-white font-semibold rounded-lg shadow hover:bg-teal-700 transition"
+                    className={`w-full md:w-auto px-6 py-2 font-semibold rounded-lg shadow transition 
+    ${booking.status !== "paid"
+                        ? "bg-teal-600 text-white hover:bg-teal-700"
+                        : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                      }`}
                   >
-                    Plan Budget
+                    {booking.status === "paid" ? "Budget planned" : "Plan Budget"}
                   </button>
+                  {booking.status === "paid" && (
+                    <button
+                      onClick={() => navigate(`/budget/${booking._id}`)}
+                      className="w-full md:w-auto px-6 py-2 font-semibold rounded-lg shadow bg-green-600 text-white hover:bg-green-700 transition"
+                    >
+                      View Budget
+                    </button>
+                  )}
                 </div>
+
               </div>
             ))}
           </div>

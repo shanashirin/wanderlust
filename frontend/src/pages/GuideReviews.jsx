@@ -70,7 +70,7 @@ export default function GuideReviews() {
                 className="bg-white/95 p-6 rounded-2xl shadow-md"
               >
                 <p className="font-semibold text-gray-800">
-                  {review.userName || review.user} -{" "}
+                  {review.userId.fullName || review.user} -{" "}
                   <span className="text-yellow-500">
                     {"⭐".repeat(review.rating)}
                   </span>

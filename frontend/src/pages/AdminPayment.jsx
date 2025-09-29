@@ -11,7 +11,7 @@ export default function AdminPayments() {
         const user = JSON.parse(localStorage.getItem("userInfo"));
         if (!user || !user.token) throw new Error("Not authenticated");
 
-        const res = await fetch("http://localhost:5000/api/payments", {
+        const res = await fetch("http://localhost:5000/api/payments/all", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${user.token}`,
@@ -21,6 +21,7 @@ export default function AdminPayments() {
         if (!res.ok) throw new Error("Failed to fetch payments");
         const data = await res.json();
         setPayments(data);
+        console.log(data);
       } catch (err) {
         console.error(err);
         toast.error(err.message || "Failed to fetch payments");

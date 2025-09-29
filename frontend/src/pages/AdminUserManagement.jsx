@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 export default function AdminUserManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const admin = JSON.parse(localStorage.getItem("userInfo"));
   const token = admin?.token;
@@ -68,13 +69,19 @@ export default function AdminUserManagement() {
     }
   };
 
+  const viewDetials = (user) => {
+    setSelectedUser(user);
+    console.log(user);
+  }
+
+
   if (loading) return <p className="text-center mt-10">Loading users...</p>;
 
   return (
     <div
-    className="min-h-screen bg-cover bg-center relative p-6"
-    style={{ backgroundImage: "url('../public/images/balloon.png')" }}
-  >
+      className="min-h-screen bg-cover bg-center relative p-6"
+      style={{ backgroundImage: "url('../public/images/balloon.png')" }}
+    >
       <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Admin – User Management</h1>
@@ -101,6 +108,12 @@ export default function AdminUserManagement() {
                 </div>
                 <div className="flex gap-2">
                   <button
+                    onClick={() => viewDetials(user)}
+                    className={`px-3 py-1 rounded-lg bg-green-600 text-white hover:opacity-90`}
+                  >
+                    View
+                  </button>
+                  {/* <button
                     onClick={() => toggleVerification(user)}
                     className={`px-3 py-1 rounded-lg ${user.isVerified
                         ? "bg-yellow-500 text-white"
@@ -108,13 +121,13 @@ export default function AdminUserManagement() {
                       } hover:opacity-90`}
                   >
                     {user.isVerified ? "Unverify" : "Verify"}
-                  </button>
-                  <button
+                  </button> */}
+                  {/* <button
                     onClick={() => removeUser(user._id)}
                     className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700"
                   >
                     Remove
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ))}
