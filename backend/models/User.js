@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema(
     phone: { type: String, required: true },
     place: { type: String, required: true },
     password: { type: String, required: true, select: false }, // ✅ select: false so not always required on update
-
+    certificateUrl: { type: String }, // URL to the uploaded certificate
     role: {
       type: String,
       enum: ["user", "guide", "admin"],

@@ -61,11 +61,11 @@ export default function AdminReviews() {
           <div key={index} className="bg-white/95 p-6 rounded-2xl shadow-md">
             {console.log(review)}
             <p className="font-semibold text-gray-800">
-              {review.userId.fullName || review.user} -{" "}
+              {review.userId?.fullName || review.user} -{" "}
               <span className="text-yellow-500">{"⭐".repeat(review.rating)}</span>
             </p>
             <p className="text-gray-600 mt-2">{review.comment}</p>
-            {review.guideId && <p className="text-gray-500 mt-1">Guide: {review.guideId.fullName}</p>}
+            {review.guideId && <p className="text-gray-500 mt-1">Guide: {review.guideId?.fullName}</p>}
             {review.place && <p className="text-gray-500 mt-1">Place: {review.place}</p>}
           </div>
         ))}

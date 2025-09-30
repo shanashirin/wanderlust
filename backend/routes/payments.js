@@ -89,7 +89,9 @@ router.get("/all", protect, async (req, res) => {
     try {
         const payments = await Payment.find()
             .populate("package", "title price")
-            .populate("user", "fullName email");
+            .populate("user", "fullName email")
+            .populate("guide", "fullName email");
+
         res.json(payments);
     } catch (err) {
         console.error(err);

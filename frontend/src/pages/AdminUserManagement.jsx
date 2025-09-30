@@ -24,9 +24,7 @@ export default function AdminUserManagement() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        // Filter only role === 'user'
-        const onlyUsers = data.filter((u) => u.role === "user");
-        setUsers(onlyUsers);
+        setUsers(data);
       } catch (err) {
         console.error("Failed to fetch users:", err);
         alert("Cannot load users. Check your network.");
@@ -37,43 +35,13 @@ export default function AdminUserManagement() {
     fetchUsers();
   }, [token]);
 
-  // Remove a user
-  const removeUser = async (id) => {
-    if (!window.confirm("Are you sure you want to remove this user?")) return;
-    try {
-      const res = await fetch(`http://localhost:5000/api/users/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to remove user");
-      setUsers((prev) => prev.filter((u) => u._id !== id));
-      alert("User removed successfully!");
-    } catch (err) {
-      alert("❌ " + err.message);
-    }
-  };
-
-  // Toggle verification
-  const toggleVerification = async (user) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/users/${user._id}/verify`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to update verification");
-      setUsers((prev) =>
-        prev.map((u) => (u._id === user._id ? { ...u, isVerified: !u.isVerified } : u))
-      );
-    } catch (err) {
-      alert("❌ " + err.message);
-    }
-  };
-
-  const viewDetials = (user) => {
+  const viewDetails = (user) => {
     setSelectedUser(user);
-    console.log(user);
-  }
+  };
 
+  const closeDetails = () => {
+    setSelectedUser(null);
+  };
 
   if (loading) return <p className="text-center mt-10">Loading users...</p>;
 
@@ -81,14 +49,9 @@ export default function AdminUserManagement() {
     <div
       className="min-h-screen bg-cover bg-center relative p-6"
       style={{ backgroundImage: "url('../public/images/balloon.png')" }}
-    >
-      <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Admin – User Management</h1>
-          <Link to="/admin-dashboard" className="text-teal-700 hover:text-teal-900">
-            ← Back
-          </Link>
-        </div>
+    > <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg"> <div className="flex justify-between items-center mb-6"> <h1 className="text-2xl font-bold text-gray-800">Admin – User Management</h1> <Link to="/admin-dashboard" className="text-teal-700 hover:text-teal-900">
+      ← Back </Link> </div>
+
 
         {users.length === 0 ? (
           <p className="text-gray-500 text-center">No users found</p>
@@ -101,39 +64,60 @@ export default function AdminUserManagement() {
               >
                 <div>
                   <span className="text-gray-800 font-medium">{user.fullName}</span>
-                  {!user.isVerified && (
-                    <span className="ml-2 text-sm text-red-600">(Not Verified)</span>
-                  )}
                   <p className="text-sm text-gray-500">{user.email}</p>
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => viewDetials(user)}
-                    className={`px-3 py-1 rounded-lg bg-green-600 text-white hover:opacity-90`}
+                    onClick={() => viewDetails(user)}
+                    className="px-3 py-1 rounded-lg bg-green-600 text-white hover:opacity-90"
                   >
                     View
                   </button>
-                  {/* <button
-                    onClick={() => toggleVerification(user)}
-                    className={`px-3 py-1 rounded-lg ${user.isVerified
-                        ? "bg-yellow-500 text-white"
-                        : "bg-green-600 text-white"
-                      } hover:opacity-90`}
-                  >
-                    {user.isVerified ? "Unverify" : "Verify"}
-                  </button> */}
-                  {/* <button
-                    onClick={() => removeUser(user._id)}
-                    className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                  >
-                    Remove
-                  </button> */}
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Modal for user details */}
+      {selectedUser && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white w-96 p-6 rounded-lg shadow-lg relative">
+            <button
+              onClick={closeDetails}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+            >
+              ✖
+            </button>
+            <h2 className="text-xl font-bold mb-4 text-gray-800">User Details</h2>
+            <p><span className="font-semibold">Name:</span> {selectedUser.fullName}</p>
+            <p><span className="font-semibold">Email:</span> {selectedUser.email}</p>
+            <p><span className="font-semibold">Phone:</span> {selectedUser.phone || "—"}</p>
+            <p><span className="font-semibold">Place:</span> {selectedUser.place || "—"}</p>
+            <p><span className="font-semibold">Role:</span> {selectedUser.role}</p>
+            {selectedUser.role === "guide" && (
+              <p>
+                <span className="font-semibold">Certificate:</span>{" "}
+                {selectedUser.certificateUrl ? (
+                  <a
+                    href={selectedUser.certificateUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                    View Certificate
+                  </a>
+                ) : (
+                  "—"
+                )}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
+
+
   );
 }

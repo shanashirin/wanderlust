@@ -120,11 +120,11 @@ export default function MyBookings() {
             >
               {/* Avatar */}
               <div className="w-24 h-24 rounded-full bg-teal-100 flex items-center justify-center mx-auto mb-3 text-xl font-bold text-teal-700">
-                {guide.fullName?.charAt(0).toUpperCase()}
+                {guide?.fullName?.charAt(0).toUpperCase()}
               </div>
 
               {/* Guide Info */}
-              <h4 className="text-lg font-bold text-center">{guide.fullName}</h4>
+              <h4 className="text-lg font-bold text-center">{guide?.fullName}</h4>
               <p className="text-sm text-gray-600 text-center">{guide.email}</p>
               <p className="text-sm text-gray-500 text-center">{guide.place || "No location provided"}</p>
 

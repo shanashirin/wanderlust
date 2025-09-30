@@ -88,6 +88,19 @@ export default function AdminGuideManagement() {
                   <p className="text-gray-600 text-sm">
                     Role: {guide.role}
                   </p>
+                  <p className="text-gray-600 text-sm">
+                    Place: {guide.place || "N/A"}
+                  </p>
+                  {guide.certificateUrl && (
+                    <a
+                      href={guide.certificateUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline text-sm"
+                    >
+                      View Certificate
+                    </a>
+                  )}
                 </div>
 
                 <button

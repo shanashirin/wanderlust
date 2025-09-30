@@ -13,15 +13,16 @@ export default function GuidePayments() {
         const user = JSON.parse(localStorage.getItem("userInfo"));
         if (!user || !user.token) throw new Error("Not authenticated");
 
+
         const res = await fetch("http://localhost:5000/api/payments/all", {
-          headers: { Authorization: `Bearer ${user.token}` },
+          headers: { Authorization: `Bearer ${user.token} ` },
         });
 
         if (!res.ok) throw new Error("Failed to fetch payments");
 
         const data = await res.json();
         // Filter only payments related to this guide
-        const guidePayments = data.filter(p => p.user?._id === user?._id);
+        const guidePayments = data.filter(p => p.guide?._id === user._id);
         setPayments(guidePayments);
       } catch (err) {
         console.error(err);
@@ -32,6 +33,7 @@ export default function GuidePayments() {
     };
 
     fetchPayments();
+
   }, []);
 
   // Total earnings = sum of guide shares (half of each payment)
@@ -42,15 +44,16 @@ export default function GuidePayments() {
   const handlePayoutRequest = async () => {
     try {
       const user = JSON.parse(localStorage.getItem("userInfo"));
-      const res = await fetch("http://localhost:5000/api/guide/request-payout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-      });
+      // const res = await fetch("http://localhost:5000/api/guide/request-payout", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${user.token}`,
+      //   },
+      // });
 
-      if (!res.ok) throw new Error("Failed to request payout");
+
+      // if (!res.ok) throw new Error("Failed to request payout");
 
       setPayoutRequested(true);
       toast.success("Payout request submitted!");
@@ -58,6 +61,8 @@ export default function GuidePayments() {
       console.error(err);
       toast.error(err.message || "Failed to request payout");
     }
+
+
   };
 
   if (loading)
@@ -67,8 +72,8 @@ export default function GuidePayments() {
     <div
       className="min-h-screen bg-cover bg-center relative p-6"
       style={{ backgroundImage: "url('../public/images/balloon.png')" }}
-    >
-      <div className="absolute inset-0 bg-white/40 backdrop-blur-md"></div>
+    > <div className="absolute inset-0 bg-white/40 backdrop-blur-md"></div>
+
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 py-10">
         {/* Navbar */}
@@ -110,16 +115,20 @@ export default function GuidePayments() {
                 className="bg-white/95 rounded-xl shadow-lg p-6 flex justify-between items-center"
               >
                 <div>
-                  <p className="font-bold text-lg text-gray-800">{payment.user.fullName}</p>
-                  <p className="text-gray-600">📍 {payment.package.title}</p>
+                  <p className="font-bold text-lg text-gray-800">
+                    {payment.user?.fullName || "Tourist"}
+                  </p>
+                  <p className="text-gray-600">📍 {payment.package?.title || "N/A"}</p>
                   <p className="text-gray-500">
                     📅 {new Date(payment.createdAt).toLocaleDateString()}
                   </p>
                   <p
-                    className={`mt-1 font-medium ${payment.status === "paid" ? "text-green-600" : "text-yellow-600"
+                    className={`mt-1 font-medium ${payment.status === "paid"
+                      ? "text-green-600"
+                      : "text-yellow-600"
                       }`}
                   >
-                    Status: {payment.status}
+                    user Status: {payment.status}
                   </p>
                 </div>
 
@@ -141,5 +150,7 @@ export default function GuidePayments() {
         </div>
       </div>
     </div>
+
+
   );
 }
